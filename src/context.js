@@ -1,5 +1,6 @@
 import React, { Component, createContext } from 'react';
-import items from './data';
+//import items from './data';
+import Client from './contentful';
 
 export const RoomContext = createContext();
 export const RoomConsumer = RoomContext.Consumer;
@@ -22,13 +23,25 @@ export class RoomProvider extends Component {
   }
 
   // getData
-  componentDidMount() {
-    let rooms = this.formatData(items);
-    let featuredRooms = rooms.filter(room => room.featured)
-    let maxPrice = Math.max(...rooms.map(item => item.price));
-    let maxSize = Math.max(...rooms.map(item => item.size));
+  getData = async () => {
+    try {
+      let res = await Client.getEntries({ content_type: "resortReservation" });
 
-    this.setState({ rooms, featuredRooms, sortedRooms: rooms, loading: false, maxSize, maxPrice, price: maxPrice })
+      let rooms = this.formatData(res.items);
+      let featuredRooms = rooms.filter(room => room.featured)
+      let maxPrice = Math.max(...rooms.map(item => item.price));
+      let maxSize = Math.max(...rooms.map(item => item.size));
+
+      this.setState({ rooms, featuredRooms, sortedRooms: rooms, loading: false, maxSize, maxPrice, price: maxPrice })
+
+
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
+  componentDidMount() {
+    this.getData();
   }
 
   formatData = items => {
